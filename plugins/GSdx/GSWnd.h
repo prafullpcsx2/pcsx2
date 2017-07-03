@@ -60,6 +60,7 @@ class GSWndGL : public GSWnd
 {
 protected:
 	bool m_ctx_attached;
+	int m_vsync;
 
 	bool IsContextAttached() const { return m_ctx_attached; }
 	void PopulateGlFunction();
@@ -67,8 +68,12 @@ protected:
 	void FullContextInit();
 	virtual void CreateContext(int major, int minor) = 0;
 
+	virtual void SetSwapInterval(int vsync) = 0;
+	virtual bool CompositorEnabled() = 0;
+	virtual bool HasLateVsyncSupport() = 0;
+
 public:
-	GSWndGL() : m_ctx_attached(false) {};
+	GSWndGL() : m_ctx_attached(false), m_vsync(0) {};
 	virtual ~GSWndGL() {};
 
 	virtual bool Create(const string& title, int w, int h) = 0;
@@ -88,5 +93,5 @@ public:
 	virtual void Hide() = 0;
 	virtual void HideFrame() = 0;
 	virtual void Flip() = 0;
-	virtual void SetVSync(int vsync) = 0;
+	virtual void SetVSync(int vsync) final;
 };

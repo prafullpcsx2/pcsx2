@@ -191,3 +191,16 @@ void GSWndGL::FullContextInit()
 	PopulateGlFunction();
 	PopulateWndGlFunction();
 }
+
+void GSWndGL::SetVSync(int vsync)
+{
+	if (!HasLateVsyncSupport() && vsync < 0)
+		m_vsync = -vsync; // Late vsync not supported, fallback to standard vsync
+	else
+		m_vsync = vsync;
+
+	if (CompositorEnabled())
+		SetSwapInterval(0); // Vsync is already done by the compositor
+	else
+		SetSwapInterval(m_vsync);
+}

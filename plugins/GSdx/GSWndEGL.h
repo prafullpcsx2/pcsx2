@@ -42,6 +42,10 @@ class GSWndEGL : public GSWndGL
 	void CreateContext(int major, int minor);
 	void BindAPI();
 
+	void SetSwapInterval(int vsync) final;
+	bool CompositorEnabled() final { return false; }
+	bool HasLateVsyncSupport() final { return false; }
+
 	void OpenEGLDisplay();
 	void CloseEGLDisplay();
 
@@ -66,7 +70,6 @@ public:
 	void* GetProcAddress(const char* name, bool opt = false) final;
 
 	void Flip() final;
-	void SetVSync(int vsync) final;
 
 	// Deprecated API
 	void Show() final {};
