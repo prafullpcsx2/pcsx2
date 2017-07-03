@@ -264,9 +264,7 @@ bool GSWndWGL::Create(const string& title, int w, int h)
 
 	DWORD style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_BORDER;
 
-	GSVector4i r;
-
-	GetWindowRect(GetDesktopWindow(), r);
+	GSVector4i r = GetWindowRect();
 
 	// Old GSOpen ModeWidth and ModeHeight are not necessary with this.
 	bool remote = !!GetSystemMetrics(SM_REMOTESESSION);
@@ -311,6 +309,15 @@ GSVector4i GSWndWGL::GetClientRect()
 	return r;
 }
 
+GSVector4i GSWndWGL::GetWindowRect()
+{
+	GSVector4i r;
+
+	::GetWindowRect(GetDesktopWindow(), r);
+
+	return r;
+}
+
 void* GSWndWGL::GetProcAddress(const char* name, bool opt)
 {
 	void* ptr = (void*)wglGetProcAddress(name);
@@ -332,8 +339,37 @@ void GSWndWGL::SetSwapInterval(int vsync)
 	if (m_swapinterval) m_swapinterval(vsync);
 }
 
+bool GSWndWGL::CompositorEnabled()
+{
+	BOOL dwm;
+	if (DwmIsCompositionEnabled(&dwm) != S_OK)
+		return false;
+
+	// Note: DWM is always true on Win8 and later
+	if (!dwm)
+		return false;
+
+	// Easy case are done. It remains driver black magic
+
+	// Recent driver (+380.xx ??) seem to always get v-sync enforced someway.
+	// XXX it would be nice to understand what happen to fix it properly
+	if (GLLoader::nvidia_buggy_driver)
+		return true;
+
+	// If the surface is fullscreen, the driver will trigger an exclusive
+	// fullscreen mode.
+	GSVector4i surface = GetClientRect();
+	GSVector4i window = GetWindowRect();
+	return (surface != window).alltrue();
+}
+
 void GSWndWGL::Flip()
 {
+	// The compositor manages its own kind of Vsync/double-buffering. You need to wait the availabitiliy of the buffer
+	// before the swap to avoid stuttering.
+	if (CompositorEnabled())
+		DwmFlush();
+
 	SwapBuffers(m_NativeDisplay);
 }
 
