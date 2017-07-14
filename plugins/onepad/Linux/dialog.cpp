@@ -477,6 +477,18 @@ void Dialog::repopulate()
 // Main
 void DisplayDialog()
 {
+    if (g_conf.ftw) {
+        wxString info("The OnePad GUI is mostly provided to map keyboard/mouse to the virtual PS2 pad.\n\n"
+                      "Gamepads/Joysticks are Plug & Play. Player Gamepad can be selected in the 'Gamepad Configuration' panel.\n\n"
+                      "If you prefer to manually map your Gamepad, you should use the 'onepad-legacy' plugin instead.");
+
+        wxMessageDialog ftw(nullptr, info);
+        ftw.ShowModal();
+
+        g_conf.ftw = 0;
+        SaveConfig();
+    }
+
     Dialog dialog;
 
     dialog.InitDialog();
